@@ -9,6 +9,6 @@ type Parser struct {
 	BuiltinCommands []commands.BuiltinCommand
 }
 
-func (p *Parser) Parse(substituedInput string, globalEnv map[string]string) (exec.Pipeline, error) {
+func (p *Parser) Parse(substitutedInput string, globalEnv map[string]string) (exec.Pipeline, error) {
 	panic("not implemented")
 }

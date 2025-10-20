@@ -13,6 +13,6 @@ func (i *Interpreter) Start() {
 	panic("not implemented")
 }
 
-func (i *Interpreter) substitue(userInput string) string {
+func (i *Interpreter) substitute(userInput string) string {
 	panic("not implemented")
 }
