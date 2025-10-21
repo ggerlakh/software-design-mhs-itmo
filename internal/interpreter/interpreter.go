@@ -13,6 +13,7 @@ func (i *Interpreter) Start() {
 	panic("not implemented")
 }
 
+//nolint:unused
 func (i *Interpreter) substitute(userInput string) string {
 	panic("not implemented")
 }

@@ -15,13 +15,14 @@ func (p *Pipeline) Run() {
 }
 
 type ParsedCommand struct {
-	Name            string
-	Args            []string
-	Stdin           io.Reader
-	Stdout          io.Writer
-	Stderr          io.Writer
-	Env             map[string]string
-	CurrDir         string
+	Name    string
+	Args    []string
+	Stdin   io.Reader
+	Stdout  io.Writer
+	Stderr  io.Writer
+	Env     map[string]string
+	CurrDir string
+	//nolint:unused
 	commandExecutor commands.CommandExecutor
 }
 
