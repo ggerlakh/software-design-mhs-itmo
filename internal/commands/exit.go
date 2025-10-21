@@ -1,5 +1,9 @@
 package commands
 
+import (
+	"github.com/ggerlakh/software-design-mhs-itmo/internal/errors"
+)
+
 type ExitCommand struct{}
 
 func (e *ExitCommand) Name() string {
@@ -7,9 +11,9 @@ func (e *ExitCommand) Name() string {
 }
 
 func (e *ExitCommand) Exec(args []string) error {
-	panic("not implemented")
+	return errors.ErrExit
 }
 
 func (e *ExitCommand) Help() string {
-	panic("not implemented")
+	return "exit - terminate the shell"
 }
