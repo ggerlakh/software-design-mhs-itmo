@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 
 	customErrors "github.com/ggerlakh/software-design-mhs-itmo/internal/errors"
 	"github.com/ggerlakh/software-design-mhs-itmo/internal/parser"
@@ -36,7 +37,8 @@ Loop:
 			break Loop
 		}
 		userInput := scanner.Text()
-		pipeline, err := i.CmdParser.Parse(userInput, i.Env)
+		substitutedInput := i.substitute(userInput)
+		pipeline, err := i.CmdParser.Parse(substitutedInput, i.Env)
 
 		switch {
 		case errors.Is(err, customErrors.ErrExit):
@@ -47,4 +49,37 @@ Loop:
 
 		pipeline.Run()
 	}
+}
+
+// substitute выполняет подстановку переменных окружения в пользовательском вводе.
+// Поддерживает подстановку переменных в формате $VAR или ${VAR}.
+// Если переменная не найдена, оставляет строку как есть.
+//
+// Примеры:
+//
+//	echo $HOME → echo /home/user
+//	echo ${PATH} → echo /usr/bin:/bin
+//	echo $UNDEFINED → echo $UNDEFINED
+func (i *Interpreter) substitute(userInput string) string {
+	result := userInput
+
+	// Подстановка переменных в формате ${VAR}
+	result = regexp.MustCompile(`\$\{([^}]+)\}`).ReplaceAllStringFunc(result, func(match string) string {
+		varName := match[2 : len(match)-1] // Убираем ${ и }
+		if value, exists := i.Env[varName]; exists {
+			return value
+		}
+		return match // Если переменная не найдена, оставляем как есть
+	})
+
+	// Подстановка переменных в формате $VAR
+	result = regexp.MustCompile(`\$([A-Za-z_][A-Za-z0-9_]*)`).ReplaceAllStringFunc(result, func(match string) string {
+		varName := match[1:] // Убираем $
+		if value, exists := i.Env[varName]; exists {
+			return value
+		}
+		return match // Если переменная не найдена, оставляем как есть
+	})
+
+	return result
 }

@@ -75,3 +75,147 @@ func TestInterpreter_EnvironmentManipulation(t *testing.T) {
 		t.Error("переменная ANOTHER_VAR не удалена")
 	}
 }
+
+func TestInterpreter_Substitute_SimpleVariable(t *testing.T) {
+	interpreter := &Interpreter{
+		Env: map[string]string{
+			"HOME": "/home/user",
+			"PATH": "/usr/bin:/bin",
+		},
+		CmdParser: parser.Parser{},
+	}
+
+	// Тест простой подстановки $VAR
+	result := interpreter.substitute("echo $HOME")
+	expected := "echo /home/user"
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+
+	result = interpreter.substitute("echo $PATH")
+	expected = "echo /usr/bin:/bin"
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+}
+
+func TestInterpreter_Substitute_BracedVariable(t *testing.T) {
+	interpreter := &Interpreter{
+		Env: map[string]string{
+			"HOME": "/home/user",
+			"PATH": "/usr/bin:/bin",
+		},
+		CmdParser: parser.Parser{},
+	}
+
+	// Тест подстановки ${VAR}
+	result := interpreter.substitute("echo ${HOME}")
+	expected := "echo /home/user"
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+
+	result = interpreter.substitute("echo ${PATH}")
+	expected = "echo /usr/bin:/bin"
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+}
+
+func TestInterpreter_Substitute_MultipleVariables(t *testing.T) {
+	interpreter := &Interpreter{
+		Env: map[string]string{
+			"HOME": "/home/user",
+			"USER": "john",
+		},
+		CmdParser: parser.Parser{},
+	}
+
+	// Тест множественных переменных
+	result := interpreter.substitute("echo $USER lives in $HOME")
+	expected := "echo john lives in /home/user"
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+
+	result = interpreter.substitute("echo ${USER} lives in ${HOME}")
+	expected = "echo john lives in /home/user"
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+}
+
+func TestInterpreter_Substitute_UndefinedVariable(t *testing.T) {
+	interpreter := &Interpreter{
+		Env: map[string]string{
+			"HOME": "/home/user",
+		},
+		CmdParser: parser.Parser{},
+	}
+
+	// Тест несуществующей переменной
+	result := interpreter.substitute("echo $UNDEFINED")
+	expected := "echo $UNDEFINED" // Должна остаться неизменной
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+
+	result = interpreter.substitute("echo ${UNDEFINED}")
+	expected = "echo ${UNDEFINED}" // Должна остаться неизменной
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+}
+
+func TestInterpreter_Substitute_MixedFormats(t *testing.T) {
+	interpreter := &Interpreter{
+		Env: map[string]string{
+			"HOME": "/home/user",
+			"USER": "john",
+		},
+		CmdParser: parser.Parser{},
+	}
+
+	// Тест смешанных форматов
+	result := interpreter.substitute("echo $USER lives in ${HOME}")
+	expected := "echo john lives in /home/user"
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+}
+
+func TestInterpreter_Substitute_NoVariables(t *testing.T) {
+	interpreter := &Interpreter{
+		Env: map[string]string{
+			"HOME": "/home/user",
+		},
+		CmdParser: parser.Parser{},
+	}
+
+	// Тест строки без переменных
+	result := interpreter.substitute("echo hello world")
+	expected := "echo hello world"
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+
+	result = interpreter.substitute("")
+	expected = ""
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+}
+
+func TestInterpreter_Substitute_EmptyEnvironment(t *testing.T) {
+	interpreter := &Interpreter{
+		Env:       make(map[string]string),
+		CmdParser: parser.Parser{},
+	}
+
+	// Тест с пустым окружением
+	result := interpreter.substitute("echo $HOME")
+	expected := "echo $HOME" // Должна остаться неизменной
+	if result != expected {
+		t.Errorf("ожидалось: %q, получено: %q", expected, result)
+	}
+}
