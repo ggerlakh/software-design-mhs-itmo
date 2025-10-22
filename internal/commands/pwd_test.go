@@ -1,24 +1,24 @@
 package commands
 
 import (
-	"io"
+	"bytes"
 	"os"
 	"strings"
 	"testing"
 )
 
-// Подменяет стандартный вывод, чтобы проверить результат Exec().
-func capturePwdOutput(f func()) string {
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	f()
-
-	w.Close()
-	os.Stdout = old
-	out, _ := io.ReadAll(r)
-	return string(out)
+// testExecWithOutput выполняет команду с переданными аргументами и возвращает вывод
+func testPwdExecWithOutput(cmd CommandExecutor, args []string) string {
+	var buf bytes.Buffer
+	ctx := &CommandContext{
+		Stdin:  os.Stdin,
+		Stdout: &buf,
+		Stderr: os.Stderr,
+		Env:    make(map[string]string),
+		Dir:    ".",
+	}
+	cmd.Exec(args, ctx)
+	return buf.String()
 }
 
 func TestPwdCommand_Simple(t *testing.T) {
@@ -29,9 +29,7 @@ func TestPwdCommand_Simple(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	out := capturePwdOutput(func() {
-		_ = cmd.Exec(nil)
-	})
+	out := testPwdExecWithOutput(cmd, nil)
 
 	out = strings.TrimSpace(out)
 	if out != expected {
@@ -47,9 +45,7 @@ func TestPwdCommand_IgnoresArgs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	out := capturePwdOutput(func() {
-		_ = cmd.Exec([]string{"extra", "args"})
-	})
+	out := testPwdExecWithOutput(cmd, []string{"extra", "args"})
 
 	out = strings.TrimSpace(out)
 	if out != expected {

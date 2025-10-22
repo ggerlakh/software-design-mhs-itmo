@@ -27,7 +27,7 @@ func (c *CatCommand) Name() string {
 //
 // Если не указано ни одного файла, читается stdin.
 // Если указан "-" как имя файла, также читается stdin.
-func (c *CatCommand) Exec(args []string) error {
+func (c *CatCommand) Exec(args []string, ctx *CommandContext) error {
 	var (
 		numberAll      bool
 		numberNonEmpty bool
@@ -51,7 +51,9 @@ func (c *CatCommand) Exec(args []string) error {
 		case "-T", "--show-tabs":
 			showTabs = true
 		case "--help":
-			fmt.Println(c.Help())
+			if _, err := fmt.Fprintln(ctx.Stdout, c.Help()); err != nil {
+				return err
+			}
 			return nil
 		default:
 			// Любая неизвестная опция считаем файлом
@@ -74,7 +76,7 @@ func (c *CatCommand) Exec(args []string) error {
 		var reader io.Reader
 
 		if fname == "-" {
-			reader = os.Stdin
+			reader = ctx.Stdin
 		} else {
 			//nolint:gosec // открываем файлы, как делает обычный cat, пользователь сам контролирует доступ
 			file, err := os.Open(fname)
@@ -83,7 +85,10 @@ func (c *CatCommand) Exec(args []string) error {
 			}
 			defer func(f *os.File) {
 				if err := f.Close(); err != nil {
-					fmt.Fprintf(os.Stderr, "ошибка при закрытии файла %s: %v\n", f.Name(), err)
+					if _, writeErr := fmt.Fprintf(ctx.Stderr, "ошибка при закрытии файла %s: %v\n", f.Name(), err); writeErr != nil {
+						// Игнорируем ошибку записи в stderr
+						_ = writeErr
+					}
 				}
 			}(file)
 			reader = file
@@ -109,16 +114,24 @@ func (c *CatCommand) Exec(args []string) error {
 
 			if numberNonEmpty {
 				if !isBlank {
-					fmt.Printf("%6d\t%s\n", lineNum, line)
+					if _, err := fmt.Fprintf(ctx.Stdout, "%6d\t%s\n", lineNum, line); err != nil {
+						return err
+					}
 					lineNum++
 				} else {
-					fmt.Println()
+					if _, err := fmt.Fprintln(ctx.Stdout); err != nil {
+						return err
+					}
 				}
 			} else if numberAll {
-				fmt.Printf("%6d\t%s\n", lineNum, line)
+				if _, err := fmt.Fprintf(ctx.Stdout, "%6d\t%s\n", lineNum, line); err != nil {
+					return err
+				}
 				lineNum++
 			} else {
-				fmt.Println(line)
+				if _, err := fmt.Fprintln(ctx.Stdout, line); err != nil {
+					return err
+				}
 			}
 		}
 

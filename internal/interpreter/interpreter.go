@@ -1,3 +1,6 @@
+// Package interpreter реализует основной интерпретатор командной строки.
+// Содержит структуру Interpreter для управления Read-Execute-Print Loop (REPL).
+// Обрабатывает пользовательский ввод, парсит команды и выполняет их через пайплайны.
 package interpreter
 
 import (
@@ -12,22 +15,28 @@ import (
 
 const exitCommand = "exit"
 
+// Interpreter представляет основной интерпретатор командной строки.
+// Реализует Read-Execute-Print Loop (REPL) для интерактивной работы.
 type Interpreter struct {
 	Env       map[string]string
 	CmdParser parser.Parser
 }
 
-// Точка запуска интерпретатора
+// Start запускает основной цикл интерпретатора (REPL).
+// Читает команды из stdin, парсит их и выполняет.
+// Завершается при команде "exit" или при EOF.
 func (i *Interpreter) Start() {
 	fmt.Printf("Welcome to go-cli! To esacpe type %q.\n", exitCommand)
 	scanner := bufio.NewScanner(os.Stdin)
 Loop:
 	for {
 		fmt.Print("> ")
-		scanner.Scan()
+		if !scanner.Scan() {
+			// EOF или ошибка чтения - выходим из цикла
+			break Loop
+		}
 		userInput := scanner.Text()
-		substitutedInput := i.substitute(userInput)
-		pipeline, err := i.CmdParser.Parse(substitutedInput, i.Env)
+		pipeline, err := i.CmdParser.Parse(userInput, i.Env)
 
 		switch {
 		case errors.Is(err, customErrors.ErrExit):
@@ -38,10 +47,4 @@ Loop:
 
 		pipeline.Run()
 	}
-}
-
-//nolint:unused
-func (i *Interpreter) substitute(userInput string) string {
-	// TODO
-	return userInput
 }

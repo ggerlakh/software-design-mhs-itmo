@@ -20,13 +20,15 @@ func (p *PwdCommand) Name() string {
 // Примеры:
 //
 //	pwd → /home/user/project
-func (p *PwdCommand) Exec(args []string) error {
+func (p *PwdCommand) Exec(args []string, ctx *CommandContext) error {
 	dir, err := os.Getwd()
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(dir)
+	if _, err := fmt.Fprintln(ctx.Stdout, dir); err != nil {
+		return err
+	}
 	return nil
 }
 
