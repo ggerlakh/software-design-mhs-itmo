@@ -1,23 +1,28 @@
 package commands
 
 import (
+	"bytes"
 	"io"
 	"os"
+	"strings"
 	"testing"
 )
 
-// Перехват stdout для проверки вывода
-func captureWcOutput(f func()) string {
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	f()
-
-	w.Close()
-	os.Stdout = old
-	out, _ := io.ReadAll(r)
-	return string(out)
+// testExecWithOutput выполняет команду с переданными аргументами и возвращает вывод
+func testWcExecWithOutput(cmd CommandExecutor, args []string, stdin io.Reader) string {
+	var buf bytes.Buffer
+	if stdin == nil {
+		stdin = os.Stdin
+	}
+	ctx := &CommandContext{
+		Stdin:  stdin,
+		Stdout: &buf,
+		Stderr: os.Stderr,
+		Env:    make(map[string]string),
+		Dir:    ".",
+	}
+	cmd.Exec(args, ctx)
+	return buf.String()
 }
 
 func TestWcCommand_LinesWordsBytes(t *testing.T) {
@@ -26,9 +31,7 @@ func TestWcCommand_LinesWordsBytes(t *testing.T) {
 	_ = os.WriteFile(tmp, []byte(content), 0o644)
 
 	cmd := &WcCommand{}
-	out := captureWcOutput(func() {
-		_ = cmd.Exec([]string{tmp})
-	})
+	out := testWcExecWithOutput(cmd, []string{tmp}, nil)
 
 	if out != "3 6 20\n" {
 		// проверка на общий формат
@@ -42,9 +45,7 @@ func TestWcCommand_OnlyLines(t *testing.T) {
 	_ = os.WriteFile(tmp, []byte(content), 0o644)
 
 	cmd := &WcCommand{}
-	out := captureWcOutput(func() {
-		_ = cmd.Exec([]string{"-l", tmp})
-	})
+	out := testWcExecWithOutput(cmd, []string{"-l", tmp}, nil)
 
 	expected := "3\n"
 	if out != expected {
@@ -53,15 +54,10 @@ func TestWcCommand_OnlyLines(t *testing.T) {
 }
 
 func TestWcCommand_Stdin(t *testing.T) {
-	r, w, _ := os.Pipe()
-	os.Stdin = r
-	io.WriteString(w, "hello world\nhi\n")
-	w.Close()
-
 	cmd := &WcCommand{}
-	out := captureWcOutput(func() {
-		_ = cmd.Exec([]string{"-l"})
-	})
+	input := "hello world\nhi\n"
+	reader := strings.NewReader(input)
+	out := testWcExecWithOutput(cmd, []string{"-l"}, reader)
 
 	expected := "2\n"
 	if out != expected {

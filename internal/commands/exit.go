@@ -10,7 +10,7 @@ func (e *ExitCommand) Name() string {
 	return "exit"
 }
 
-func (e *ExitCommand) Exec(args []string) error {
+func (e *ExitCommand) Exec(args []string, ctx *CommandContext) error {
 	return errors.ErrExit
 }
 

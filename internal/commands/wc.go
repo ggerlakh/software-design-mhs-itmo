@@ -3,6 +3,7 @@ package commands
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
@@ -23,7 +24,7 @@ func (w *WcCommand) Name() string {
 //
 //	wc file.txt    → 3 10 55   (3 строки, 10 слов, 55 байт)
 //	wc -l file.txt → 3         (только количество строк)
-func (w *WcCommand) Exec(args []string) error {
+func (w *WcCommand) Exec(args []string, ctx *CommandContext) error {
 	var files []string
 	showLines, showWords, showBytes := true, true, true
 
@@ -47,26 +48,32 @@ func (w *WcCommand) Exec(args []string) error {
 	}
 
 	for _, f := range files {
-		var file *os.File
-		var err error
+		var reader io.Reader
 
 		if f == "-" {
-			file = os.Stdin
+			reader = ctx.Stdin
 		} else {
 			//nolint:gosec // открываем файлы, как делает обычный cat, пользователь сам контролирует доступ
-			file, err = os.Open(f)
+			file, err := os.Open(f)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "wc: не удалось открыть файл %s: %v\n", f, err)
+				if _, writeErr := fmt.Fprintf(ctx.Stderr, "wc: не удалось открыть файл %s: %v\n", f, err); writeErr != nil {
+					// Игнорируем ошибку записи в stderr
+					_ = writeErr
+				}
 				continue
 			}
 			defer func(f *os.File) {
 				if err := f.Close(); err != nil {
-					fmt.Fprintf(os.Stderr, "ошибка при закрытии файла %s: %v\n", f.Name(), err)
+					if _, writeErr := fmt.Fprintf(ctx.Stderr, "ошибка при закрытии файла %s: %v\n", f.Name(), err); writeErr != nil {
+						// Игнорируем ошибку записи в stderr
+						_ = writeErr
+					}
 				}
 			}(file)
+			reader = file
 		}
 
-		scanner := bufio.NewScanner(file)
+		scanner := bufio.NewScanner(reader)
 		lines, words, bytesCount := 0, 0, 0
 
 		for scanner.Scan() {
@@ -87,7 +94,9 @@ func (w *WcCommand) Exec(args []string) error {
 			output += fmt.Sprintf("%d ", bytesCount)
 		}
 
-		fmt.Println(strings.TrimSpace(output))
+		if _, err := fmt.Fprintln(ctx.Stdout, strings.TrimSpace(output)); err != nil {
+			return err
+		}
 	}
 
 	return nil

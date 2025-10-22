@@ -1,24 +1,25 @@
 package commands
 
 import (
+	"bytes"
 	"io"
 	"os"
 	"strings"
 	"testing"
 )
 
-// Подменяет стандартный вывод, чтобы проверить результат Exec().
-func captureCatOutput(f func()) string {
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	f()
-
-	w.Close()
-	os.Stdout = old
-	out, _ := io.ReadAll(r)
-	return string(out)
+// testExecWithOutput выполняет команду с переданными аргументами и возвращает вывод
+func testExecWithOutput(cmd CommandExecutor, args []string, stdin io.Reader) string {
+	var buf bytes.Buffer
+	ctx := &CommandContext{
+		Stdin:  stdin,
+		Stdout: &buf,
+		Stderr: os.Stderr,
+		Env:    make(map[string]string),
+		Dir:    ".",
+	}
+	cmd.Exec(args, ctx)
+	return buf.String()
 }
 
 func TestCatCommand_SimpleFile(t *testing.T) {
@@ -29,9 +30,7 @@ func TestCatCommand_SimpleFile(t *testing.T) {
 	}
 
 	cmd := &CatCommand{}
-	out := captureCatOutput(func() {
-		_ = cmd.Exec([]string{tmp})
-	})
+	out := testExecWithOutput(cmd, []string{tmp}, nil)
 
 	if out != content {
 		t.Errorf("ожидался вывод %q, получено %q", content, out)
@@ -44,9 +43,7 @@ func TestCatCommand_NumberNonEmpty(t *testing.T) {
 	_ = os.WriteFile(tmp, []byte(content), 0o644)
 
 	cmd := &CatCommand{}
-	out := captureCatOutput(func() {
-		_ = cmd.Exec([]string{"-b", tmp})
-	})
+	out := testExecWithOutput(cmd, []string{"-b", tmp}, nil)
 
 	lines := strings.Split(strings.TrimSpace(out), "\n")
 	if !strings.Contains(lines[0], "1") || !strings.Contains(lines[2], "2") {
@@ -60,9 +57,7 @@ func TestCatCommand_SqueezeBlank(t *testing.T) {
 	_ = os.WriteFile(tmp, []byte(content), 0o644)
 
 	cmd := &CatCommand{}
-	out := captureCatOutput(func() {
-		_ = cmd.Exec([]string{"-s", tmp})
-	})
+	out := testExecWithOutput(cmd, []string{"-s", tmp}, nil)
 
 	expected := "1\n\n2\n\n3\n"
 	if out != expected {
@@ -76,9 +71,7 @@ func TestCatCommand_ShowEndsAndTabs(t *testing.T) {
 	_ = os.WriteFile(tmp, []byte(content), 0o644)
 
 	cmd := &CatCommand{}
-	out := captureCatOutput(func() {
-		_ = cmd.Exec([]string{"-E", "-T", tmp})
-	})
+	out := testExecWithOutput(cmd, []string{"-E", "-T", tmp}, nil)
 
 	expected := "a^Ib$\n"
 	if out != expected {
@@ -88,14 +81,9 @@ func TestCatCommand_ShowEndsAndTabs(t *testing.T) {
 
 func TestCatCommand_Stdin(t *testing.T) {
 	cmd := &CatCommand{}
-	r, w, _ := os.Pipe()
-	os.Stdin = r
-	io.WriteString(w, "input from stdin\n")
-	w.Close()
-
-	out := captureCatOutput(func() {
-		_ = cmd.Exec([]string{"-"})
-	})
+	input := "input from stdin\n"
+	reader := strings.NewReader(input)
+	out := testExecWithOutput(cmd, []string{"-"}, reader)
 
 	if out != "input from stdin\n" {
 		t.Errorf("ожидался вывод stdin, получено %q", out)

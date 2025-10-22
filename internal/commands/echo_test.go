@@ -1,32 +1,30 @@
 package commands
 
 import (
-	"io"
+	"bytes"
 	"os"
 	"strings"
 	"testing"
 )
 
-// Подменяет стандартный вывод, чтобы проверить результат Exec().
-func captureEchoOutput(f func()) string {
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	f()
-
-	w.Close()
-	os.Stdout = old
-	out, _ := io.ReadAll(r)
-	return string(out)
+// testExecWithOutput выполняет команду с переданными аргументами и возвращает вывод
+func testEchoExecWithOutput(cmd CommandExecutor, args []string) string {
+	var buf bytes.Buffer
+	ctx := &CommandContext{
+		Stdin:  os.Stdin,
+		Stdout: &buf,
+		Stderr: os.Stderr,
+		Env:    make(map[string]string),
+		Dir:    ".",
+	}
+	cmd.Exec(args, ctx)
+	return buf.String()
 }
 
 func TestEchoCommand_Simple(t *testing.T) {
 	cmd := &EchoCommand{}
 
-	out := captureEchoOutput(func() {
-		_ = cmd.Exec([]string{"Hello", "world"})
-	})
+	out := testEchoExecWithOutput(cmd, []string{"Hello", "world"})
 
 	expected := "Hello world\n"
 	if out != expected {
@@ -37,9 +35,7 @@ func TestEchoCommand_Simple(t *testing.T) {
 func TestEchoCommand_NoNewline(t *testing.T) {
 	cmd := &EchoCommand{}
 
-	out := captureEchoOutput(func() {
-		_ = cmd.Exec([]string{"-n", "Hello", "world"})
-	})
+	out := testEchoExecWithOutput(cmd, []string{"-n", "Hello", "world"})
 
 	expected := "Hello world"
 	if out != expected {
@@ -50,9 +46,7 @@ func TestEchoCommand_NoNewline(t *testing.T) {
 func TestEchoCommand_EmptyArgs(t *testing.T) {
 	cmd := &EchoCommand{}
 
-	out := captureEchoOutput(func() {
-		_ = cmd.Exec([]string{})
-	})
+	out := testEchoExecWithOutput(cmd, []string{})
 
 	expected := "\n"
 	if out != expected {
@@ -63,9 +57,7 @@ func TestEchoCommand_EmptyArgs(t *testing.T) {
 func TestEchoCommand_OnlyFlagNoArgs(t *testing.T) {
 	cmd := &EchoCommand{}
 
-	out := captureEchoOutput(func() {
-		_ = cmd.Exec([]string{"-n"})
-	})
+	out := testEchoExecWithOutput(cmd, []string{"-n"})
 
 	expected := ""
 	if out != expected {
@@ -76,9 +68,7 @@ func TestEchoCommand_OnlyFlagNoArgs(t *testing.T) {
 func TestEchoCommand_MultipleSpaces(t *testing.T) {
 	cmd := &EchoCommand{}
 
-	out := captureEchoOutput(func() {
-		_ = cmd.Exec([]string{"foo", "bar", "baz"})
-	})
+	out := testEchoExecWithOutput(cmd, []string{"foo", "bar", "baz"})
 
 	expectedWords := []string{"foo", "bar", "baz"}
 	for _, w := range expectedWords {

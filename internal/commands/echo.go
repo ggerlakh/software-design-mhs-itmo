@@ -23,7 +23,7 @@ func (e *EchoCommand) Name() string {
 //
 //	echo hello world   → hello world\n
 //	echo -n test       → test
-func (e *EchoCommand) Exec(args []string) error {
+func (e *EchoCommand) Exec(args []string, ctx *CommandContext) error {
 	newline := true
 
 	// Проверяем опцию -n
@@ -37,9 +37,13 @@ func (e *EchoCommand) Exec(args []string) error {
 
 	// Печатаем результат с учётом опции -n
 	if newline {
-		fmt.Println(output)
+		if _, err := fmt.Fprintln(ctx.Stdout, output); err != nil {
+			return err
+		}
 	} else {
-		fmt.Print(output)
+		if _, err := fmt.Fprint(ctx.Stdout, output); err != nil {
+			return err
+		}
 	}
 
 	return nil
