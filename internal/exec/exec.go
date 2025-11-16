@@ -6,7 +6,9 @@ package exec
 import (
 	"os"
 	"os/exec"
+	"strings"
 
+	"github.com/ggerlakh/software-design-mhs-itmo/internal/checkutils"
 	"github.com/ggerlakh/software-design-mhs-itmo/internal/commands"
 )
 
@@ -98,33 +100,45 @@ type ParsedCommand struct {
 // затем пытаясь выполнить как внешнюю программу.
 // Возвращает код возврата: 0 для успеха, 1 для ошибки.
 func (p *ParsedCommand) Run(builtinCommands []commands.BuiltinCommand) int {
+
+	var retCode int
+
 	// Ищем встроенную команду
-	for _, builtin := range builtinCommands {
-		if builtin.Name() == p.Name {
-			err := builtin.Exec(p.Args, p.Context)
-			if err != nil {
-				return 1
+	if checkutils.IsEnvAssignmentCommand(p.Name) {
+		parts := strings.Split(p.Name, "=")
+		p.Context.Env[parts[0]] = parts[1]
+	} else if checkutils.IsBuiltInCommand(p.Name, builtinCommands) {
+		for _, builtin := range builtinCommands {
+			if builtin.Name() == p.Name {
+				err := builtin.Exec(p.Args, p.Context)
+				if err != nil {
+					retCode = 1
+				} else {
+					retCode = 0
+				}
 			}
-			return 0
+		}
+	} else {
+
+		// Если не найдена встроенная команда, пытаемся выполнить внешнюю
+		//nolint:gosec // Пользователь сам контролирует выполнение команд
+		cmd := exec.Command(p.Name, p.Args...)
+		cmd.Stdin = p.Context.Stdin
+		cmd.Stdout = p.Context.Stdout
+		cmd.Stderr = p.Context.Stderr
+		cmd.Dir = p.Context.Dir
+
+		// Устанавливаем переменные окружения
+		for key, value := range p.Context.Env {
+			cmd.Env = append(cmd.Env, key+"="+value)
+		}
+
+		err := cmd.Run()
+		if err != nil {
+			retCode = 1
+		} else {
+			retCode = 0
 		}
 	}
-
-	// Если не найдена встроенная команда, пытаемся выполнить внешнюю
-	//nolint:gosec // Пользователь сам контролирует выполнение команд
-	cmd := exec.Command(p.Name, p.Args...)
-	cmd.Stdin = p.Context.Stdin
-	cmd.Stdout = p.Context.Stdout
-	cmd.Stderr = p.Context.Stderr
-	cmd.Dir = p.Context.Dir
-
-	// Устанавливаем переменные окружения
-	for key, value := range p.Context.Env {
-		cmd.Env = append(cmd.Env, key+"="+value)
-	}
-
-	err := cmd.Run()
-	if err != nil {
-		return 1
-	}
-	return 0
+	return retCode
 }

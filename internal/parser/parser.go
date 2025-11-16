@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ggerlakh/software-design-mhs-itmo/internal/checkutils"
 	"github.com/ggerlakh/software-design-mhs-itmo/internal/commands"
 	customErrors "github.com/ggerlakh/software-design-mhs-itmo/internal/errors"
 	"github.com/ggerlakh/software-design-mhs-itmo/internal/exec"
@@ -50,6 +51,11 @@ func (p *Parser) Parse(substitutedInput string, globalEnv map[string]string) (ex
 
 		commandName := parts[0]
 		args := parts[1:]
+
+		// проверяем распознана ли команда интерпретатором
+		if !checkutils.IsBuiltInCommand(commandName, p.BuiltinCommands) && !checkutils.IsExternalCommand(commandName) && !checkutils.IsEnvAssignmentCommand(commandName) {
+			return exec.Pipeline{}, &customErrors.CommandNotFoundError{Command: commandName}
+		}
 
 		// Получаем текущую директорию
 		currentDir, err := os.Getwd()

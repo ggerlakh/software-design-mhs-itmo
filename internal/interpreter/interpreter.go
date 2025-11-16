@@ -44,7 +44,8 @@ Loop:
 		case errors.Is(err, customErrors.ErrExit):
 			break Loop
 		case err != nil:
-			fmt.Printf("Evaluation error: %s\n", err)
+			// fmt.Printf("Evaluation error: %s\n", err)
+			fmt.Printf("%s\n", err)
 		}
 
 		pipeline.Run()
