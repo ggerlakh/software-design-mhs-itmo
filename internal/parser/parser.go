@@ -53,7 +53,9 @@ func (p *Parser) Parse(substitutedInput string, globalEnv map[string]string) (ex
 		args := parts[1:]
 
 		// проверяем распознана ли команда интерпретатором
-		if !checkutils.IsBuiltInCommand(commandName, p.BuiltinCommands) && !checkutils.IsExternalCommand(commandName) && !checkutils.IsEnvAssignmentCommand(commandName) {
+		if !checkutils.IsBuiltInCommand(commandName, p.BuiltinCommands) &&
+			!checkutils.IsExternalCommand(commandName) &&
+			!checkutils.IsEnvAssignmentCommand(commandName) {
 			return exec.Pipeline{}, &customErrors.CommandNotFoundError{Command: commandName}
 		}
 
