@@ -41,24 +41,3 @@ jobs:
           else
             echo "✅ Coverage is acceptable"
           fi
-
-  pr-title-check:
-    name: Check PR Title
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Check PR title
-        uses: amannn/action-semantic-pull-request@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          types: |
-            feat
-            fix
-            docs
-            style
-            refactor
-            test
-            chore
-          requireScope: false
-
