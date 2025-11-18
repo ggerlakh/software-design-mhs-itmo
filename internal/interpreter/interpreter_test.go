@@ -84,12 +84,12 @@ func TestInterpreter_StartRunsCommands(t *testing.T) {
 	oldStdout := os.Stdout
 	os.Stdout = outputWriter
 
-	interpretor := &Interpreter{
+	interpreter := &Interpreter{
 		Preprocessor: pre,
 		Parser:       par,
 		Executor:     exec,
 	}
-	interpretor.Start()
+	interpreter.Start()
 
 	_ = outputWriter.Close()
 	output, _ := io.ReadAll(outputReader)
