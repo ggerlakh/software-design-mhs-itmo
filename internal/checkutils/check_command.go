@@ -1,3 +1,5 @@
+// Package checkutils содержит вспомогательные функции для проверки команд:
+// builtin, внешних и присваиваний переменных окружения.
 package checkutils
 
 import (

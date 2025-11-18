@@ -1,0 +1,19 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+
+rectangle "Подсистема препроцессинга\n(Выполняет все подстановки $)" as preprocessing {
+}
+
+rectangle "Подсистема парсинга" as parsing {
+}
+
+rectangle "Подсистема выполнения команд" as execution {
+}
+
+preprocessing -down-> parsing
+parsing -down-> execution
+
+@enduml
+

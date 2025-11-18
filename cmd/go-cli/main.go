@@ -5,8 +5,10 @@ import (
 	"strings"
 
 	"github.com/ggerlakh/software-design-mhs-itmo/internal/commands"
+	"github.com/ggerlakh/software-design-mhs-itmo/internal/executor"
 	"github.com/ggerlakh/software-design-mhs-itmo/internal/interpreter"
 	"github.com/ggerlakh/software-design-mhs-itmo/internal/parser"
+	"github.com/ggerlakh/software-design-mhs-itmo/internal/preprocessor"
 )
 
 func GetEnvMap() map[string]string {
@@ -24,17 +26,31 @@ func GetEnvMap() map[string]string {
 }
 
 func main() {
+	env := GetEnvMap()
+	builtins := []commands.BuiltinCommand{
+		&commands.CatCommand{},
+		&commands.EchoCommand{},
+		&commands.WcCommand{},
+		&commands.PwdCommand{},
+		&commands.ExitCommand{},
+	}
+
+	preproc := preprocessor.NewPreprocessor(&preprocessor.EnvSubstitutionStep{Env: env})
+	cmdParser := parser.NewParser(builtinNames(builtins))
+	exec := executor.NewExecutor(env, builtins)
+
 	i := interpreter.Interpreter{
-		Env: GetEnvMap(),
-		CmdParser: parser.Parser{
-			BuiltinCommands: []commands.BuiltinCommand{
-				&commands.CatCommand{},
-				&commands.EchoCommand{},
-				&commands.WcCommand{},
-				&commands.PwdCommand{},
-				&commands.ExitCommand{},
-			},
-		},
+		Preprocessor: preproc,
+		Parser:       cmdParser,
+		Executor:     exec,
 	}
 	i.Start()
+}
+
+func builtinNames(cmds []commands.BuiltinCommand) []string {
+	names := make([]string, len(cmds))
+	for i, cmd := range cmds {
+		names[i] = cmd.Name()
+	}
+	return names
 }

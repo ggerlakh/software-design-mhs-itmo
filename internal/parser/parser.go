@@ -1,86 +1,88 @@
 // Package parser отвечает за разбор пользовательского ввода на команды и пайпы.
-// Преобразует строки команд в структуры ParsedCommand и Pipeline для последующего выполнения.
+// Преобразует результат препроцессинга в независимую модель ParsedPipeline.
 // Поддерживает одиночные команды, пайпы и команду exit для завершения работы.
 package parser
 
 import (
-	"os"
 	"strings"
 
 	"github.com/ggerlakh/software-design-mhs-itmo/internal/checkutils"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/commands"
 	customErrors "github.com/ggerlakh/software-design-mhs-itmo/internal/errors"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/exec"
+	"github.com/ggerlakh/software-design-mhs-itmo/internal/preprocessor"
 )
 
-// Parser отвечает за разбор пользовательского ввода на команды и пайпы.
-// Содержит список встроенных команд для проверки при разборе.
-type Parser struct {
-	BuiltinCommands []commands.BuiltinCommand
+const exitCommand = "exit"
+
+// ParsedCommand описывает команду, полученную после парсинга.
+type ParsedCommand struct {
+	Name string
+	Args []string
 }
 
-// Parse разбирает входную строку на команды и создает Pipeline.
-// Поддерживает:
-//   - Одиночные команды: "echo hello"
-//   - Пайпы: "echo hello | wc"
-//   - Команду exit для завершения работы
-//
-// Возвращает Pipeline с разобранными командами или ошибку.
-func (p *Parser) Parse(substitutedInput string, globalEnv map[string]string) (exec.Pipeline, error) {
-	// Проверяем на команду exit
-	if strings.TrimSpace(substitutedInput) == "exit" {
-		return exec.Pipeline{}, customErrors.ErrExit
+// Pipeline представляет результат парсинга командной строки.
+type Pipeline struct {
+	Commands []ParsedCommand
+}
+
+// Parser отвечает за валидацию и разбор пользовательского ввода.
+// Хранит список известных встроенных команд для проверки.
+type Parser struct {
+	builtinNames map[string]struct{}
+}
+
+// NewParser создает парсер с перечнем имен встроенных команд.
+func NewParser(builtinNames []string) *Parser {
+	nameSet := make(map[string]struct{}, len(builtinNames))
+	for _, name := range builtinNames {
+		nameSet[name] = struct{}{}
 	}
 
-	// Разбиваем входную строку по символу пайпа
-	commandStrings := strings.Split(substitutedInput, "|")
+	return &Parser{builtinNames: nameSet}
+}
 
-	var comms []exec.ParsedCommand
+// Parse превращает результат препроцессинга в Pipeline.
+func (p *Parser) Parse(input preprocessor.Result) (Pipeline, error) {
+	if strings.TrimSpace(input.Value) == "" {
+		return Pipeline{}, nil
+	}
 
-	for _, cmdStr := range commandStrings {
-		cmdStr = strings.TrimSpace(cmdStr)
-		if cmdStr == "" {
+	if strings.TrimSpace(input.Value) == exitCommand {
+		return Pipeline{}, customErrors.ErrExit
+	}
+
+	segments := strings.Split(input.Value, "|")
+	var commands []ParsedCommand
+
+	for _, segment := range segments {
+		segment = strings.TrimSpace(segment)
+		if segment == "" {
 			continue
 		}
 
-		// Разбираем команду на имя и аргументы
-		parts := strings.Fields(cmdStr)
+		parts := strings.Fields(segment)
 		if len(parts) == 0 {
 			continue
 		}
 
-		commandName := parts[0]
+		name := parts[0]
 		args := parts[1:]
 
-		// проверяем распознана ли команда интерпретатором
-		if !checkutils.IsBuiltInCommand(commandName, p.BuiltinCommands) &&
-			!checkutils.IsExternalCommand(commandName) &&
-			!checkutils.IsEnvAssignmentCommand(commandName) {
-			return exec.Pipeline{}, &customErrors.CommandNotFoundError{Command: commandName}
+		if !p.isKnownCommand(name) &&
+			!checkutils.IsExternalCommand(name) &&
+			!checkutils.IsEnvAssignmentCommand(name) {
+			return Pipeline{}, &customErrors.CommandNotFoundError{Command: name}
 		}
 
-		// Получаем текущую директорию
-		currentDir, err := os.Getwd()
-		if err != nil {
-			// Если не удалось получить текущую директорию, используем "."
-			currentDir = "."
-		}
-
-		// Создаем CommandContext
-		ctx := &commands.CommandContext{
-			Env: globalEnv,
-			Dir: currentDir,
-		}
-
-		// Создаем ParsedCommand
-		parsedCmd := exec.ParsedCommand{
-			Name:    commandName,
-			Args:    args,
-			Context: ctx,
-		}
-
-		comms = append(comms, parsedCmd)
+		commands = append(commands, ParsedCommand{
+			Name: name,
+			Args: args,
+		})
 	}
 
-	return exec.Pipeline{Commands: comms, BuiltinCommands: p.BuiltinCommands}, nil
+	return Pipeline{Commands: commands}, nil
+}
+
+func (p *Parser) isKnownCommand(name string) bool {
+	_, ok := p.builtinNames[name]
+	return ok
 }
