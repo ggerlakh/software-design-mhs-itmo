@@ -1,0 +1,118 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+
+' Пакеты и классы
+package "commands" #DDDDDD {
+    interface CommandExecutor {
+        +Exec(args: []string, ctx: *CommandContext): error
+    }
+    
+    interface BuiltinCommand {
+        +Exec(args: []string, ctx: *CommandContext): error
+        +Name(): string
+        +Help(): string
+    }
+    
+    class CommandContext {
+        +Stdin: io.Reader
+        +Stdout: io.Writer
+        +Stderr: io.Writer
+        +Env: map[string]string
+        +Dir: string
+    }
+    
+    class EchoCommand
+    class PwdCommand
+    class CatCommand
+    class WcCommand
+    class ExitCommand
+    
+    BuiltinCommand --|> CommandExecutor : extends
+    EchoCommand ..|> BuiltinCommand : implements
+    PwdCommand ..|> BuiltinCommand : implements
+    CatCommand ..|> BuiltinCommand : implements
+    WcCommand ..|> BuiltinCommand : implements
+    ExitCommand ..|> BuiltinCommand : implements
+}
+
+package "preprocessor" #DDDDDD {
+    class Preprocessor {
+        -steps: []Step
+        +Process(input: string): Result
+    }
+    
+    interface Step {
+        +Apply(input: Result): Result
+    }
+    
+    class EnvSubstitutionStep {
+        +Env: map[string]string
+        +Apply(input: Result): Result
+    }
+    
+    class Result {
+        +Original: string
+        +Value: string
+    }
+    
+    Preprocessor o-- Step
+    EnvSubstitutionStep ..|> Step
+}
+
+package "parser" #DDDDDD {
+    class Parser {
+        -builtinNames: map[string]struct
+        +Parse(input: Result): Pipeline
+    }
+    
+    class ParsedCommand {
+        +Name: string
+        +Args: []string
+    }
+    
+    class Pipeline {
+        +Commands: []ParsedCommand
+    }
+    
+    Parser ..> Pipeline : creates
+    Pipeline *-- ParsedCommand
+}
+
+package "executor" #DDDDDD {
+    class Executor {
+        +BuiltinCommands: []BuiltinCommand
+        +Env: map[string]string
+        +Execute(plan: Plan)
+    }
+    
+    class Plan {
+        +Commands: []ExecutableCommand
+    }
+    
+    class ExecutableCommand {
+        +Name: string
+        +Args: []string
+    }
+    
+    Executor ..> Plan : consumes
+    Plan *-- ExecutableCommand
+    Executor --> BuiltinCommand : uses
+    Executor --> CommandContext : configures
+}
+
+package "interpreter" #DDDDDD {
+    class Interpreter {
+        +Preprocessor: Preprocessor
+        +Parser: Parser
+        +Executor: Executor
+        +Start()
+    }
+    
+    Interpreter --> Preprocessor
+    Interpreter --> Parser
+    Interpreter --> Executor
+}
+
+@enduml

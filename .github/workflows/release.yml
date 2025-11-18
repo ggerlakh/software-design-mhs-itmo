@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.25.1
+
+      - name: Run tests
+        run: go test -v ./...
+
+      - name: Build binaries
+        run: |
+          # Build for multiple platforms
+          GOOS=linux GOARCH=amd64 go build -o go-cli-linux-amd64 ./cmd/go-cli
+          GOOS=linux GOARCH=arm64 go build -o go-cli-linux-arm64 ./cmd/go-cli
+          GOOS=darwin GOARCH=amd64 go build -o go-cli-darwin-amd64 ./cmd/go-cli
+          GOOS=darwin GOARCH=arm64 go build -o go-cli-darwin-arm64 ./cmd/go-cli
+          GOOS=windows GOARCH=amd64 go build -o go-cli-windows-amd64.exe ./cmd/go-cli
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            echo "First release"
+            git log --pretty=format:"- %s (%h)" > changelog.txt
+          else
+            echo "Changes since $PREV_TAG"
+            git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" > changelog.txt
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            go-cli-linux-amd64
+            go-cli-linux-arm64
+            go-cli-darwin-amd64
+            go-cli-darwin-arm64
+            go-cli-windows-amd64.exe
+          body_path: changelog.txt
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -1,0 +1,58 @@
+version: "2"
+run:
+  tests: true
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+linters:
+  enable:
+    - gosec
+    - lll
+    - misspell
+    - nakedret
+    - unconvert
+  disable:
+    - depguard
+    - dupl
+    - prealloc
+  settings:
+    errcheck:
+      check-type-assertions: false
+      check-blank: false
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+    gocyclo:
+      min-complexity: 10
+    lll:
+      line-length: 140
+    misspell:
+      locale: US
+    nakedret:
+      max-func-lines: 30
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - errcheck
+          - gocyclo
+          - gosec
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+  settings:
+    gofmt:
+      simplify: true
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
