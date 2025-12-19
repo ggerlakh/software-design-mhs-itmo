@@ -41,7 +41,7 @@ func NewParser(builtinNames []string) *Parser {
 }
 
 // Parse превращает результат препроцессинга в Pipeline.
-func (p *Parser) Parse(input preprocessor.Result) (Pipeline, error) {
+func (p *Parser) Parse(input preprocessor.PreprocessedInput) (Pipeline, error) {
 	if strings.TrimSpace(input.Value) == "" {
 		return Pipeline{}, nil
 	}

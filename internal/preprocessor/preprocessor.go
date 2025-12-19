@@ -6,15 +6,15 @@ import (
 	"regexp"
 )
 
-// Result описывает состояние строки после выполнения всех шагов препроцессинга.
-type Result struct {
+// PreprocessedInput описывает строку после выполнения шагов препроцессинга.
+type PreprocessedInput struct {
 	Original string
 	Value    string
 }
 
 // Step описывает отдельный шаг препроцессинга.
 type Step interface {
-	Apply(input Result) (Result, error)
+	Apply(input PreprocessedInput) (PreprocessedInput, error)
 }
 
 // Preprocessor выполняет последовательность шагов обработки пользовательского ввода.
@@ -28,8 +28,8 @@ func NewPreprocessor(steps ...Step) *Preprocessor {
 }
 
 // Process последовательно применяет шаги к исходной строке.
-func (p *Preprocessor) Process(input string) (Result, error) {
-	result := Result{
+func (p *Preprocessor) Process(input string) (PreprocessedInput, error) {
+	result := PreprocessedInput{
 		Original: input,
 		Value:    input,
 	}
@@ -38,7 +38,7 @@ func (p *Preprocessor) Process(input string) (Result, error) {
 	for _, step := range p.steps {
 		result, err = step.Apply(result)
 		if err != nil {
-			return Result{}, err
+			return PreprocessedInput{}, err
 		}
 	}
 
@@ -56,7 +56,7 @@ var (
 )
 
 // Apply реализует шаг подстановки переменных окружения.
-func (s *EnvSubstitutionStep) Apply(input Result) (Result, error) {
+func (s *EnvSubstitutionStep) Apply(input PreprocessedInput) (PreprocessedInput, error) {
 	value := bracedPattern.ReplaceAllStringFunc(input.Value, func(match string) string {
 		varName := match[2 : len(match)-1]
 		if envValue, ok := s.Env[varName]; ok {
@@ -73,7 +73,7 @@ func (s *EnvSubstitutionStep) Apply(input Result) (Result, error) {
 		return match
 	})
 
-	return Result{
+	return PreprocessedInput{
 		Original: input.Original,
 		Value:    value,
 	}, nil

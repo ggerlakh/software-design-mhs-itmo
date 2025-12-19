@@ -30,6 +30,7 @@ package "commands" #DDDDDD {
     class ExitCommand
     
     BuiltinCommand --|> CommandExecutor : extends
+    BuiltinCommand ..> CommandContext : uses
     EchoCommand ..|> BuiltinCommand : implements
     PwdCommand ..|> BuiltinCommand : implements
     CatCommand ..|> BuiltinCommand : implements
@@ -40,31 +41,32 @@ package "commands" #DDDDDD {
 package "preprocessor" #DDDDDD {
     class Preprocessor {
         -steps: []Step
-        +Process(input: string): Result
+        +Process(input: string): (PreprocessedInput, error)
     }
     
     interface Step {
-        +Apply(input: Result): Result
+        +Apply(input: PreprocessedInput): (PreprocessedInput, error)
     }
     
     class EnvSubstitutionStep {
         +Env: map[string]string
-        +Apply(input: Result): Result
+        +Apply(input: PreprocessedInput): (PreprocessedInput, error)
     }
     
-    class Result {
+    class PreprocessedInput {
         +Original: string
         +Value: string
     }
     
     Preprocessor o-- Step
+    Preprocessor ..> PreprocessedInput : returns
     EnvSubstitutionStep ..|> Step
 }
 
 package "parser" #DDDDDD {
     class Parser {
         -builtinNames: map[string]struct
-        +Parse(input: Result): Pipeline
+        +Parse(input: PreprocessedInput): (Pipeline, error)
     }
     
     class ParsedCommand {
@@ -99,7 +101,6 @@ package "executor" #DDDDDD {
     Executor ..> Plan : consumes
     Plan *-- ExecutableCommand
     Executor --> BuiltinCommand : uses
-    Executor --> CommandContext : configures
 }
 
 package "interpreter" #DDDDDD {

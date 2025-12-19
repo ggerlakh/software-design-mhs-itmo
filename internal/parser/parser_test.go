@@ -14,7 +14,7 @@ func newTestParser() *Parser {
 func TestParser_Parse_ExitCommand(t *testing.T) {
 	parser := newTestParser()
 
-	_, err := parser.Parse(preprocessor.Result{Original: "exit", Value: "exit"})
+	_, err := parser.Parse(preprocessor.PreprocessedInput{Original: "exit", Value: "exit"})
 
 	if !customErrors.Is(err, customErrors.ErrExit) {
 		t.Fatalf("ожидалась ошибка ErrExit, получено: %v", err)
@@ -24,7 +24,7 @@ func TestParser_Parse_ExitCommand(t *testing.T) {
 func TestParser_Parse_SingleCommand(t *testing.T) {
 	parser := newTestParser()
 
-	pipeline, err := parser.Parse(preprocessor.Result{Original: "echo hello", Value: "echo hello"})
+	pipeline, err := parser.Parse(preprocessor.PreprocessedInput{Original: "echo hello", Value: "echo hello"})
 	if err != nil {
 		t.Fatalf("неожиданная ошибка: %v", err)
 	}
@@ -42,7 +42,7 @@ func TestParser_Parse_SingleCommand(t *testing.T) {
 func TestParser_Parse_Pipeline(t *testing.T) {
 	parser := newTestParser()
 
-	pipeline, err := parser.Parse(preprocessor.Result{Original: "", Value: "echo hello | wc -w"})
+	pipeline, err := parser.Parse(preprocessor.PreprocessedInput{Original: "", Value: "echo hello | wc -w"})
 	if err != nil {
 		t.Fatalf("неожиданная ошибка: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestParser_Parse_Pipeline(t *testing.T) {
 func TestParser_Parse_CommandNotFound(t *testing.T) {
 	parser := newTestParser()
 
-	_, err := parser.Parse(preprocessor.Result{Original: "", Value: "unknowncmd"})
+	_, err := parser.Parse(preprocessor.PreprocessedInput{Original: "", Value: "unknowncmd"})
 	if err == nil {
 		t.Fatalf("ожидалась ошибка для неизвестной команды")
 	}
@@ -72,7 +72,7 @@ func TestParser_Parse_CommandNotFound(t *testing.T) {
 func TestParser_Parse_EmptyInput(t *testing.T) {
 	parser := newTestParser()
 
-	pipeline, err := parser.Parse(preprocessor.Result{Original: "", Value: "   "})
+	pipeline, err := parser.Parse(preprocessor.PreprocessedInput{Original: "", Value: "   "})
 	if err != nil {
 		t.Fatalf("неожиданная ошибка: %v", err)
 	}
