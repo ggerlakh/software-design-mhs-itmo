@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - '**'
-  workflow_dispatch:
 
 jobs:
   test:
@@ -31,12 +30,3 @@ jobs:
           echo "### Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
           go tool cover -func=coverage.out | tail -1 >> $GITHUB_STEP_SUMMARY
           
-      - name: Upload coverage to Codecov
-        continue-on-error: true
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.out
-          flags: unittests
-          fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
