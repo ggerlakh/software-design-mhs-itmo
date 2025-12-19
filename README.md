@@ -1,7 +1,7 @@
 # go-cli - Интерпретатор командной строки
 
-[![Tests](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/tests.yml/badge.svg)](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/tests.yml)
-[![Linter](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/lint.yml/badge.svg)](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/lint.yml)
+[![Tests](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/tests.yml)
+[![Linter](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/lint.yml)
 [![codecov](https://codecov.io/gh/ggerlakh/software-design-mhs-itmo/branch/main/graph/badge.svg)](https://codecov.io/gh/ggerlakh/software-design-mhs-itmo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Version](https://img.shields.io/badge/Go-1.25.1-blue.svg)](https://golang.org/)
