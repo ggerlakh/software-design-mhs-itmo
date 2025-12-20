@@ -30,6 +30,7 @@ func main() {
 	builtins := []commands.BuiltinCommand{
 		&commands.CatCommand{},
 		&commands.EchoCommand{},
+		&commands.GrepCommand{},
 		&commands.WcCommand{},
 		&commands.PwdCommand{},
 		&commands.ExitCommand{},
