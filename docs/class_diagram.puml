@@ -27,6 +27,7 @@ package "commands" #DDDDDD {
     class PwdCommand
     class CatCommand
     class WcCommand
+    class GrepCommand
     class ExitCommand
     
     BuiltinCommand --|> CommandExecutor : extends
@@ -35,6 +36,7 @@ package "commands" #DDDDDD {
     PwdCommand ..|> BuiltinCommand : implements
     CatCommand ..|> BuiltinCommand : implements
     WcCommand ..|> BuiltinCommand : implements
+    GrepCommand ..|> BuiltinCommand : implements
     ExitCommand ..|> BuiltinCommand : implements
 }
 
