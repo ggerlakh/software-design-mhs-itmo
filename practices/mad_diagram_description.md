@@ -1,6 +1,6 @@
 ## mad_diagram_description
 
-[mad_diagram](./mad_diagram.png)
+![mad_diagram](./mad_diagram.png)
 
 Сложно читаемая диаграмма.  
 
