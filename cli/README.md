@@ -2,7 +2,6 @@
 
 [![Tests](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/tests.yml)
 [![Linter](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/lint.yml)
-[![CodeQL](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/ggerlakh/software-design-mhs-itmo/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Version](https://img.shields.io/badge/Go-1.25.1-blue.svg)](https://golang.org/)
 
