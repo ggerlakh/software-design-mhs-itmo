@@ -3,7 +3,7 @@ package checkutils
 import (
 	"testing"
 
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/commands"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/commands"
 )
 
 type stubCommand struct {

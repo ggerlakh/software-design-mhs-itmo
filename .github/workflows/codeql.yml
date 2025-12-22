@@ -12,6 +12,9 @@ jobs:
   analyze:
     name: Analyze Code
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
     permissions:
       actions: read
       contents: read

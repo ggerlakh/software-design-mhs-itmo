@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	customErrors "github.com/ggerlakh/software-design-mhs-itmo/internal/errors"
+	customErrors "github.com/ggerlakh/software-design-mhs-itmo/cli/internal/errors"
 )
 
 func TestBuiltinCommandMetadata(t *testing.T) {

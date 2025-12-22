@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/commands"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/executor"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/parser"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/preprocessor"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/commands"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/executor"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/parser"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/preprocessor"
 )
 
 func TestInterpreter_Creation(t *testing.T) {

@@ -3,8 +3,8 @@ package parser
 import (
 	"testing"
 
-	customErrors "github.com/ggerlakh/software-design-mhs-itmo/internal/errors"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/preprocessor"
+	customErrors "github.com/ggerlakh/software-design-mhs-itmo/cli/internal/errors"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/preprocessor"
 )
 
 func newTestParser() *Parser {

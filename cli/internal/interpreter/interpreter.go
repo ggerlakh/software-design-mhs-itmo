@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"os"
 
-	customErrors "github.com/ggerlakh/software-design-mhs-itmo/internal/errors"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/executor"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/parser"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/preprocessor"
+	customErrors "github.com/ggerlakh/software-design-mhs-itmo/cli/internal/errors"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/executor"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/parser"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/preprocessor"
 )
 
 const exitCommand = "exit"

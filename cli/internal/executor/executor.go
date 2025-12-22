@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/checkutils"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/commands"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/checkutils"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/commands"
 )
 
 // ExecutableCommand описывает команду, подготовленную к выполнению.

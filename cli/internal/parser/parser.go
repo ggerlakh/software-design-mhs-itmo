@@ -6,9 +6,9 @@ package parser
 import (
 	"strings"
 
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/checkutils"
-	customErrors "github.com/ggerlakh/software-design-mhs-itmo/internal/errors"
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/preprocessor"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/checkutils"
+	customErrors "github.com/ggerlakh/software-design-mhs-itmo/cli/internal/errors"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/preprocessor"
 )
 
 const exitCommand = "exit"

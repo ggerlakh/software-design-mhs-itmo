@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/errors"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/errors"
 )
 
 type ExitCommand struct{}

@@ -12,6 +12,9 @@ jobs:
   golangci-lint:
     name: Run golangci-lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
 
     steps:
       - name: Checkout code

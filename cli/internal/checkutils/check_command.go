@@ -6,7 +6,7 @@ import (
 	stdExec "os/exec"
 	"regexp"
 
-	"github.com/ggerlakh/software-design-mhs-itmo/internal/commands"
+	"github.com/ggerlakh/software-design-mhs-itmo/cli/internal/commands"
 )
 
 func IsBuiltInCommand(commandName string, builtinCommands []commands.BuiltinCommand) bool {
