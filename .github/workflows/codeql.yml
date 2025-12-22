@@ -40,8 +40,7 @@ jobs:
           go-version: 1.25.1
 
       - name: Build
-        working-directory: cli
-        run: go build -o go-cli ./cmd/go-cli
+        run: go build -C cli -o go-cli ./cmd/go-cli
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
