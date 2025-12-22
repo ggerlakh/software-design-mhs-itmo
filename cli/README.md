@@ -196,7 +196,7 @@ golangci-lint run
 - **Commands**: реализация встроенных команд
 - **Interpreter**: основной цикл интерпретатора
 
-Подробное описание архитектуры доступно в [cli-docs/docs/architecture.md](../cli-docs/docs/architecture.md).
+Подробное описание архитектуры доступно в [cli-docs/architecture.md](../cli-docs/architecture.md).
 
 ### Руководство по стилю кода
 - Следуйте [Effective Go](https://golang.org/doc/effective_go)

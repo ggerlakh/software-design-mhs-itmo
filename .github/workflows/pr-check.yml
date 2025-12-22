@@ -32,6 +32,7 @@ jobs:
         uses: golangci/golangci-lint-action@v7
         with:
           version: latest
+          working-directory: cli
 
       - name: Check test coverage
         run: |
