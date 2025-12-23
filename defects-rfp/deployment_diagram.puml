@@ -1,0 +1,40 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+
+' Clients at top
+rectangle "Клиент диспетчера\n--\nСвободные/занятые места\nСвободные рабочие\nНаправление авто в зону" as dispatcher #LightGray
+
+rectangle "Клиент рабочего\n--\nРегистрация в смене\nДиагностика дефекта\nНачало/конец ремонта" as worker #LightGray
+
+rectangle "Клиент бригадира\n--\nНазначение ремонта\nОтчёт по ремонтникам" as foreman #LightGray
+
+rectangle "Клиент отдела качества\n--\nРегистрация дефекта\nСводный отчёт по ремонтам\nСтатистика мест дефектов" as qc #LightGray
+
+rectangle "Клиент начальника цеха\n--\nОтчёт: кол-во ремонтов\nСуммарное время" as chief #LightGray
+
+rectangle "Клиент бухгалтерии\n--\nОтчёт: отработанные смены\nПо каждому ремонтнику" as accounting #LightGray
+
+' Servers at bottom
+queue "Kafka\n--\nУведомления о дефектах\nСобытия ремонтов\nОбновления статусов" as kafka #LightGreen
+
+rectangle "Сервер приложений\n--\nREST API\nБизнес-логика" as app #LightBlue
+
+rectangle "Планировщик\n--\nОтчёты конец смены\nОтчёты конец месяца" as scheduler #LightCoral
+
+database "PostgreSQL\n--\nРемонты, дефекты\nБригады, рабочие\nЗоны, места\nАвтомобили" as db #LightYellow
+
+' Client connections
+dispatcher --> kafka : подписка
+dispatcher --> app
+worker --> app
+foreman --> app
+chief --> app
+qc --> app
+accounting --> app
+
+' Server connections
+app --> kafka : события
+app --> db : данные
+app --> scheduler : отчёты
+
+@enduml
