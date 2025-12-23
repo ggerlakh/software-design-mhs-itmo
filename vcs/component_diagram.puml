@@ -1,0 +1,17 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+
+[CLI] #F3E5F5
+[Core] #E8F4FD
+[Storage] #FFF3E0
+[Merge] #E8F5E9
+[Network] #FCE4EC
+
+CLI --> Core
+CLI --> Network
+Core --> Storage
+Core --> Merge
+Network --> Core
+
+@enduml
