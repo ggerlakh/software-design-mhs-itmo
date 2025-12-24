@@ -1,0 +1,165 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+' Core Package
+package "Core" #E8F4FD {
+    class Repository {
+        +name: string
+        +remotes: List<Remote>
+        --
+        +commit(message: string)
+        +checkout(ref: ref)
+        +createBranch(name: string)
+        +deleteBranch(name: string)
+        +mergeBranch(name: string)
+        +log()
+        +addToIndex(path: string)
+        +removeFile(path: string)
+        +addRemote(name: string, URL: string)
+        +push(remote: string)
+        +fetch(remote: string)
+        +pull(remote: string)
+    }
+
+    class Commit {
+        sha: SHA-512
+        message: string
+        date: Timestamp
+        parent: Commit
+    }
+
+    class Author {
+        +name: string
+        +email: string
+    }
+
+    class Snapshot {
+        FileTree: Map<path, hash>
+    }
+
+    class Branch {
+        +name: string
+    }
+
+    class Index {
+        files: Map<path, hash>
+    }
+
+    class Remote {
+        +name: string
+        +URL: string
+        --
+        +setName(name: string)
+        +setURL(URL: string)
+    }
+
+    class WorkTree {
+        +status(): List<FileState>
+        +restore(path: string)
+    }
+
+    enum FileState {
+        UNTRACKED
+        MODIFIED
+        STAGED
+        COMMITTED
+    }
+}
+
+' Storage Package
+package "Storage" #FFF3E0 {
+    interface IStorage {
+        +get(hash: SHA-512)
+        +put(hash: SHA-512, content: bytes)
+    }
+
+    class LocalFS
+    class SQLite
+}
+
+' Merge Package
+package "Merge" #E8F5E9 {
+    interface Differ {
+        diff(a: bytes, b: bytes)
+    }
+
+    class Merger {
+    }
+
+    interface MergeStrategy {
+        +merge(theirs: bytes, ours: bytes, base: bytes, path: string)
+    }
+
+    class ThreeWay {
+    }
+
+    class Custom {
+    }
+}
+
+' Network Package
+package "Network" #FCE4EC {
+    class Server {
+        -handleClone(): Repository
+        -handleFetch(branch: string)
+        -handlePush(branch: string, commit: Commit)
+    }
+
+    class Client {
+        +clone(URL: string, dest: string): Repository
+        +fetch(remote: string)
+        +push(remote: string, branch: string, commit: Commit)
+    }
+}
+
+' UI Package
+package "UI" #F3E5F5 {
+    class CLI {
+        -parseCommand(input: string)
+        -performAction(cmd: string, args: List<string>)
+        +startServer(addr: string, port: uint)
+    }
+}
+
+' === Relationships ===
+
+' Repository relationships
+Repository o-- Commit
+Repository o-- WorkTree
+Repository o-- Index
+Repository o-- IStorage
+Repository o-- Remote
+Repository --> Merger
+Repository o-- Branch
+
+' WorkTree uses FileState
+WorkTree --> FileState
+
+' Commit relationships
+Commit o-- Author
+Commit o-- Snapshot
+
+' Branch relationships
+Branch o-- Commit
+
+' Storage inheritance
+IStorage <|.. LocalFS
+IStorage <|.. SQLite
+
+' MergeStrategy inheritance
+MergeStrategy <|.. ThreeWay
+MergeStrategy <|.. Custom
+
+' Merger composition
+Merger o-- Differ
+Merger o-- MergeStrategy
+
+' CLI dependencies
+CLI --> Client
+CLI --> Repository
+CLI --> Server
+
+@enduml
